@@ -1,0 +1,19 @@
+#Data Source Properties
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/chat_app?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false
+    username: postgres
+    password: postgres
+    hikari:
+      initialization-fail-timeout: -1
+      connection-timeout: 30000
+  #JPA Properties
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        show_sql: true
+    hibernate:
+      ddl-auto: update
