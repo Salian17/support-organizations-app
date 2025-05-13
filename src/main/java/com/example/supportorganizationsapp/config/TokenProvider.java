@@ -44,7 +44,18 @@ public class TokenProvider {
     }
 
     public Claims getClaimsFromToken(String jwt) {
-        jwt = jwt.substring(JwtConstants.TOKEN_PREFIX.length());
+        if (jwt.startsWith(JwtConstants.TOKEN_PREFIX)) {
+            jwt = jwt.substring(JwtConstants.TOKEN_PREFIX.length());
+        }
         return jwtParser.parseSignedClaims(jwt).getPayload();
+    }
+
+    public Claims validateToken(String token) {
+        try {
+            return jwtParser.parseSignedClaims(token).getPayload();
+        } catch (Exception e) {
+            log.error("Invalid token: {}", e.getMessage());
+            throw e;
+        }
     }
 }

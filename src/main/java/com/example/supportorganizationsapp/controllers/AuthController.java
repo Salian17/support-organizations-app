@@ -3,12 +3,14 @@ package com.example.supportorganizationsapp.controllers;
 import com.example.supportorganizationsapp.config.JwtConstants;
 import com.example.supportorganizationsapp.config.TokenProvider;
 import com.example.supportorganizationsapp.dto.request.auth.LoginRequestDTO;
+import com.example.supportorganizationsapp.dto.request.auth.RefreshTokenRequestDTO;
 import com.example.supportorganizationsapp.dto.request.auth.SignUpRequest;
 import com.example.supportorganizationsapp.dto.response.auth.LoginResponseDTO;
 import com.example.supportorganizationsapp.exception.UserException;
 import com.example.supportorganizationsapp.models.User;
 import com.example.supportorganizationsapp.repository.UserRepository;
 import com.example.supportorganizationsapp.service.implementation.CustomUserDetailsService;
+import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -131,6 +133,41 @@ public class AuthController {
         log.info("User {} successfully signed in with ID {}", email, user.getId());
 
         return new ResponseEntity<>(loginResponseDTO, HttpStatus.ACCEPTED);
+    }
+
+    @Operation(
+            summary = "Обновление access токена",
+            description = "Получает новый access токен на основе переданного refresh токена.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Токен успешно обновлен"),
+                    @ApiResponse(responseCode = "401", description = "Недействительный refresh токен")
+            }
+    )
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponseDTO> refreshToken(
+            @Parameter(description = "Refresh токен", required = true)
+            @RequestBody RefreshTokenRequestDTO request) {
+        String refreshToken = request.refreshToken();
+        try {
+            Claims claims = tokenProvider.validateToken(refreshToken);
+            String email = claims.get(JwtConstants.EMAIL, String.class);
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new BadCredentialsException("User not found"));
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+            Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            String newAccessToken = tokenProvider.generateToken(authentication, JwtConstants.ACCESS_TOKEN_VALIDITY);
+            LoginResponseDTO response = LoginResponseDTO.builder()
+                    .accessToken(newAccessToken)
+                    .refreshToken(refreshToken)
+                    .userId(user.getId())
+                    .isAuthenticated(true)
+                    .build();
+            log.info("Access token refreshed for user: {}", email);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Invalid refresh token: {}", e.getMessage());
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
     }
 
     public Authentication authenticateReq(String username, String password) {
