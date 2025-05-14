@@ -18,7 +18,7 @@ public class Application extends Base {
     protected Application() {
     }
 
-    public Application(String date, String time, String departureStation, String destinationStation, String comment, StatusEnum status, User passenger, User companion) {
+    public Application(String date, String time, String departureStation, String destinationStation, String comment, StatusEnum status, User passenger) {
         this.date = date;
         this.time = time;
         this.departureStation = departureStation;
@@ -26,7 +26,6 @@ public class Application extends Base {
         this.comment = comment;
         this.status = status;
         this.passenger = passenger;
-        this.companion = companion;
     }
 
     public String getDate() {

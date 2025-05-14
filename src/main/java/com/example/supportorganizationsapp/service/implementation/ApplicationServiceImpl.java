@@ -9,6 +9,7 @@ import com.example.supportorganizationsapp.models.User;
 import com.example.supportorganizationsapp.repository.ApplicationRepository;
 import com.example.supportorganizationsapp.repository.UserRepository;
 import com.example.supportorganizationsapp.service.ApplicationService;
+import com.example.supportorganizationsapp.utils.AuthUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,21 +21,20 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private final ApplicationRepository applicationRepository;
     private final UserRepository userRepository;
+    private final AuthUtil authUtil;
 
     @Autowired
-    public ApplicationServiceImpl(ApplicationRepository applicationRepository, UserRepository userRepository) {
+    public ApplicationServiceImpl(ApplicationRepository applicationRepository, UserRepository userRepository, AuthUtil authUtil) {
         this.applicationRepository = applicationRepository;
         this.userRepository = userRepository;
+        this.authUtil = authUtil;
     }
 
     @Override
     public ApplicationResponse createApplication(CreateApplicationRequest applicationRequest) {
-        User passenger = userRepository.findById(applicationRequest.getPassengerId())
+        String passengerEmail = authUtil.getPrincipalEmail();
+        User passenger = userRepository.findByEmail(passengerEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Passenger not found"));
-        User companion = applicationRequest.getCompanionId() != null
-                ? userRepository.findById(applicationRequest.getCompanionId())
-                .orElseThrow(() -> new IllegalArgumentException("Companion not found"))
-                : null;
 
         Application application = new Application(
                 applicationRequest.getDate(),
@@ -43,8 +43,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 applicationRequest.getDestinationStation(),
                 applicationRequest.getComment(),
                 StatusEnum.NEW, // Устанавливаем статус NEW при создании
-                passenger,
-                companion
+                passenger
         );
 
         Application savedApplication = applicationRepository.save(application);
@@ -160,5 +159,21 @@ public class ApplicationServiceImpl implements ApplicationService {
                 application.getPassenger().getId(),
                 application.getCompanion() != null ? application.getCompanion().getId() : null
         );
+    }
+
+    @Override
+    public ApplicationResponse addCompanion(Long id) {
+        String companionEmail = authUtil.getPrincipalEmail();
+        User companion = userRepository.findByEmail(companionEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Companion not found"));
+
+        Application application = applicationRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Application not found"));
+
+        application.setCompanion(companion);
+        application.setStatus(StatusEnum.OVERDUE);
+
+        Application updatedApplication = applicationRepository.save(application);
+        return mapToResponse(updatedApplication);
     }
 }

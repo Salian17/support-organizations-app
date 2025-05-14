@@ -6,6 +6,7 @@ import com.example.supportorganizationsapp.dto.request.auth.LoginRequestDTO;
 import com.example.supportorganizationsapp.dto.request.auth.RefreshTokenRequestDTO;
 import com.example.supportorganizationsapp.dto.request.auth.SignUpRequest;
 import com.example.supportorganizationsapp.dto.response.auth.LoginResponseDTO;
+import com.example.supportorganizationsapp.enums.RoleEnum;
 import com.example.supportorganizationsapp.exception.UserException;
 import com.example.supportorganizationsapp.models.User;
 import com.example.supportorganizationsapp.repository.UserRepository;
@@ -41,6 +42,63 @@ public class AuthController {
     private final CustomUserDetailsService customUserDetailsService;
 
     @Operation(
+            summary = "Регистрация нового сопровождающего",
+            description = "Создаёт нового сопровождающего",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Регистрация успешно инициирована"),
+                    @ApiResponse(responseCode = "400", description = "Некорректные данные или сопровождающего уже существует")
+            }
+    )
+    @PostMapping("/signup/companion")
+    public ResponseEntity<LoginResponseDTO> signupCompanion(
+            @Parameter(description = "Данные для регистрации", required = true)
+            @RequestBody SignUpRequest signupRequestDTO) throws UserException {
+
+        final String email = signupRequestDTO.getEmail();
+        final String phoneNum = signupRequestDTO.getPhoneNumber();
+        final String password = signupRequestDTO.getPassword();
+        final String firstName = signupRequestDTO.getFirstName();
+        final String lastName = signupRequestDTO.getLastName();
+
+        Optional<User> existingUser = userRepository.findByEmail(email);
+
+        if (existingUser.isPresent()) {
+            throw new UserException("Account with email " + email + " already exists");
+        }
+
+        User newUser = User.builder()
+                .email(email)
+                .phoneNumber(phoneNum)
+                .firstName(firstName)
+                .lastName(lastName)
+                .roleEnum(RoleEnum.COMPANION)
+                .password(passwordEncoder.encode(password))
+                .build();
+
+        User savedUser = userRepository.save(newUser);
+
+        // Загружаем UserDetails для получения ролей
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // Генерируем оба токена
+        String accessToken = tokenProvider.generateToken(authentication, JwtConstants.ACCESS_TOKEN_VALIDITY);
+        String refreshToken = tokenProvider.generateToken(authentication, JwtConstants.REFRESH_TOKEN_VALIDITY);
+
+        LoginResponseDTO loginResponseDTO = LoginResponseDTO.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .userId(savedUser.getId())
+                .isAuthenticated(true)
+                .build();
+
+        log.info("User {} successfully signed up with ID {}", email, savedUser.getId());
+
+        return new ResponseEntity<>(loginResponseDTO, HttpStatus.ACCEPTED);
+    }
+
+    @Operation(
             summary = "Регистрация нового пользователя",
             description = "Создаёт нового пользователя",
             responses = {
@@ -48,7 +106,7 @@ public class AuthController {
                     @ApiResponse(responseCode = "400", description = "Некорректные данные или пользователь уже существует")
             }
     )
-    @PostMapping("/signup")
+    @PostMapping("/signup/passenger")
     public ResponseEntity<LoginResponseDTO> signup(
             @Parameter(description = "Данные для регистрации", required = true)
             @RequestBody SignUpRequest signupRequestDTO) throws UserException {
@@ -70,6 +128,7 @@ public class AuthController {
                 .phoneNumber(phoneNum)
                 .firstName(firstName)
                 .lastName(lastName)
+                .roleEnum(RoleEnum.PASSENGER)
                 .password(passwordEncoder.encode(password))
                 .build();
 

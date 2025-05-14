@@ -17,4 +17,5 @@ public interface ApplicationService {
     ApplicationResponse rejectApplication(Long id);
     ApplicationResponse startProgress(Long id);
     ApplicationResponse completeApplication(Long id);
+    ApplicationResponse addCompanion(Long id);
 }

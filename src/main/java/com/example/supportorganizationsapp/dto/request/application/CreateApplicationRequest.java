@@ -9,9 +9,6 @@ public class CreateApplicationRequest {
     public String departureStation;
     public String destinationStation;
     public String comment;
-    public StatusEnum status;
-    public Long passengerId;
-    public Long companionId;
 
     public String getDate() {
         return date;
@@ -51,29 +48,5 @@ public class CreateApplicationRequest {
 
     public void setComment(String comment) {
         this.comment = comment;
-    }
-
-    public StatusEnum getStatus() {
-        return status;
-    }
-
-    public void setStatus(StatusEnum status) {
-        this.status = status;
-    }
-
-    public Long getPassengerId() {
-        return passengerId;
-    }
-
-    public void setPassengerId(Long passengerId) {
-        this.passengerId = passengerId;
-    }
-
-    public Long getCompanionId() {
-        return companionId;
-    }
-
-    public void setCompanionId(Long companionId) {
-        this.companionId = companionId;
     }
 }

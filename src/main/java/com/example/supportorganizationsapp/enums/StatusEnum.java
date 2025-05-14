@@ -8,7 +8,8 @@ public enum StatusEnum {
     ACCEPTED(2, "Принята"),
     REJECTED(3, "Отклонена"),
     INPROGRESS(4, "В процессе"),
-    COMPLETED(5, "Выполнена");
+    COMPLETED(5, "Выполнена"),
+    OVERDUE(6,"Назначена");
 
     private int numStatus;
     private String nameStatus;

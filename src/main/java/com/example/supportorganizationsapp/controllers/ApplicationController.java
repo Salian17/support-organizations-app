@@ -185,4 +185,21 @@ public class ApplicationController {
         ApplicationResponse response = applicationService.completeApplication(id);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+
+    @Operation(
+            summary = "Назначение заявки",
+            description = "Назначает сопровождающего и меняет статус на OVERDUE",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Заявка назначена"),
+                    @ApiResponse(responseCode = "404", description = "Заявка или сопровождающий не найдены")
+            }
+    )
+    @PutMapping("/{id}/assigned")
+    public ResponseEntity<ApplicationResponse> addCompanion(
+            @Parameter(description = "ID заявки", required = true)
+            @PathVariable Long id) {
+        ApplicationResponse response = applicationService.addCompanion(id);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }
