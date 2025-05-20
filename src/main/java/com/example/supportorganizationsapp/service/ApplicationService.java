@@ -18,4 +18,6 @@ public interface ApplicationService {
     ApplicationResponse startProgress(Long id);
     ApplicationResponse completeApplication(Long id);
     ApplicationResponse addCompanion(Long id);
+    List<ApplicationResponse> getByUser();
+    List<ApplicationResponse> getByCompanion();
 }

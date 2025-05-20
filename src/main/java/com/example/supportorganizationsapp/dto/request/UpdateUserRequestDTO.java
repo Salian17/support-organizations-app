@@ -1,11 +1,10 @@
 package com.example.supportorganizationsapp.dto.request;
 
 public class UpdateUserRequestDTO {
-    private String email;
-    private String phoneNumber;
     private String firstName;
     private String lastName;
-    private String role;
+    private String phoneNumber;
+    private String email;
 
     public String getEmail() {
         return email;
@@ -39,11 +38,4 @@ public class UpdateUserRequestDTO {
         this.lastName = lastName;
     }
 
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
 }

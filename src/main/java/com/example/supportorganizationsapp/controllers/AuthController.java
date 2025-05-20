@@ -213,7 +213,8 @@ public class AuthController {
             User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new BadCredentialsException("User not found"));
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
-            Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            Authentication authentication =
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             String newAccessToken = tokenProvider.generateToken(authentication, JwtConstants.ACCESS_TOKEN_VALIDITY);
             LoginResponseDTO response = LoginResponseDTO.builder()
                     .accessToken(newAccessToken)

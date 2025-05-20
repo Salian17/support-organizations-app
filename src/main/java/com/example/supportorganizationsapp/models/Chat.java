@@ -103,13 +103,4 @@ public class Chat extends Base {
         return Objects.hash(chatName, isGroup, admins, users, createdBy);
     }
 
-//    @Override
-//    public String toString() {
-//        return "Chat{" +
-//                "id=" + id +
-//                ", chatName='" + chatName + '\'' +
-//                ", isGroup=" + isGroup +
-//                '}';
-//    }
-
 }

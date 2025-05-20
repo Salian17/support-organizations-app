@@ -96,13 +96,4 @@ public class Message extends Base {
         return Objects.hash(content, timeStamp, user, chat);
     }
 
-//    @Override
-//    public String toString() {
-//        return "Message{" +
-//                "id=" + id +
-//                ", content='" + content + '\'' +
-//                ", timeStamp=" + timeStamp +
-//                '}';
-//    }
-
 }

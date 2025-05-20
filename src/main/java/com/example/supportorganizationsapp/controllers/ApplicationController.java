@@ -186,7 +186,6 @@ public class ApplicationController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-
     @Operation(
             summary = "Назначение заявки",
             description = "Назначает сопровождающего и меняет статус на OVERDUE",
@@ -201,5 +200,31 @@ public class ApplicationController {
             @PathVariable Long id) {
         ApplicationResponse response = applicationService.addCompanion(id);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Получение всех заявок конкретного пассажира",
+            description = "Возвращает список всех заявок конкретного пассажира",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список заявок")
+            }
+    )
+    @GetMapping("/passenger")
+    public ResponseEntity<List<ApplicationResponse>> getAllByUser() {
+        List<ApplicationResponse> responses = applicationService.getByUser();
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Получение всех заявок конкретного сопроваждающего",
+            description = "Возвращает список всех заявок конкретного сопроваждающего",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список заявок")
+            }
+    )
+    @GetMapping("/companion")
+    public ResponseEntity<List<ApplicationResponse>> getAllByCompanion() {
+        List<ApplicationResponse> responses = applicationService.getByCompanion();
+        return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 }

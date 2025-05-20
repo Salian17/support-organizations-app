@@ -54,7 +54,6 @@ public class UserServiceImpl implements UserService {
             existingUser.setPhoneNumber(request.getPhoneNumber());
             existingUser.setFirstName(request.getFirstName());
             existingUser.setLastName(request.getLastName());
-            existingUser.getRoleEnum().setNameRole(request.getRole());
             return userRepository.save(existingUser);
         } else {
             throw new UserException("User not found with id " + id);

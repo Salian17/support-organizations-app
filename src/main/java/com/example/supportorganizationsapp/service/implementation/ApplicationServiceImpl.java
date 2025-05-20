@@ -137,7 +137,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public List<ApplicationResponse> getAllApplications() {
-        return applicationRepository.findAll().stream()
+        return applicationRepository.findAllNewWithoutCompanion().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -175,5 +175,27 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         Application updatedApplication = applicationRepository.save(application);
         return mapToResponse(updatedApplication);
+    }
+
+    @Override
+    public List<ApplicationResponse> getByUser() {
+        String passengerEmail = authUtil.getPrincipalEmail();
+        User passenger = userRepository.findByEmail(passengerEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Passenger not found"));
+
+        return applicationRepository.findByUser(passenger.getId()).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ApplicationResponse> getByCompanion() {
+        String passengerEmail = authUtil.getPrincipalEmail();
+        User companion = userRepository.findByEmail(passengerEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Companion not found"));
+
+        return applicationRepository.findByCompanion(companion.getId()).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 }

@@ -2,8 +2,10 @@ package com.example.supportorganizationsapp.models;
 
 import com.example.supportorganizationsapp.enums.StatusEnum;
 import jakarta.persistence.*;
+import lombok.Builder;
 
 @Entity(name = "application")
+@Builder
 public class Application extends Base {
 
     private String date;
