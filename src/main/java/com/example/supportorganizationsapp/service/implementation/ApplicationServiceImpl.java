@@ -43,7 +43,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                 applicationRequest.getDestinationStation(),
                 applicationRequest.getComment(),
                 StatusEnum.NEW, // Устанавливаем статус NEW при создании
-                passenger
+                passenger,
+                null
         );
 
         Application savedApplication = applicationRepository.save(application);
