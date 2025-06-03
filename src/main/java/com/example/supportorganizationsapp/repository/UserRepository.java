@@ -1,5 +1,6 @@
 package com.example.supportorganizationsapp.repository;
 
+import com.example.supportorganizationsapp.enums.RoleEnum;
 import com.example.supportorganizationsapp.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,4 +18,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM APP_USER u WHERE u.firstName LIKE %:fullName%")
     List<User> findByFirstName(@Param("firstName") String fullName);
 
+    List<User> findByRoleEnum(RoleEnum role);
+
+    Optional<User> findByPhoneNumber(String phoneNumber);
+
+    List<User> findByFirstNameAndLastName(String firstName, String lastName);
 }

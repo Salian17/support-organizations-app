@@ -3,6 +3,7 @@ package com.example.supportorganizationsapp.controllers;
 import com.example.supportorganizationsapp.dto.request.application.CreateApplicationRequest;
 import com.example.supportorganizationsapp.dto.request.application.UpdateApplicationRequest;
 import com.example.supportorganizationsapp.dto.response.application.ApplicationResponse;
+import com.example.supportorganizationsapp.enums.StatusEnum;
 import com.example.supportorganizationsapp.service.ApplicationService;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
@@ -239,6 +240,254 @@ public class ApplicationController {
     @GetMapping("/companion")
     public ResponseEntity<List<ApplicationResponse>> getAllByCompanion() {
         List<ApplicationResponse> responses = applicationService.getByCompanion();
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+    @Operation(
+            summary = "Получение заявок по статусу",
+            description = "Возвращает список заявок с указанным статусом",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список заявок по статусу"),
+                    @ApiResponse(responseCode = "400", description = "Некорректный статус")
+            }
+    )
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<ApplicationResponse>> getApplicationsByStatus(
+            @Parameter(description = "Статус заявки", required = true)
+            @PathVariable StatusEnum status) {
+        List<ApplicationResponse> responses = applicationService.getApplicationsByStatus(status);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Получение заявок по дате",
+            description = "Возвращает список заявок на указанную дату",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список заявок по дате"),
+                    @ApiResponse(responseCode = "400", description = "Некорректная дата")
+            }
+    )
+    @GetMapping("/date/{date}")
+    public ResponseEntity<List<ApplicationResponse>> getApplicationsByDate(
+            @Parameter(description = "Дата в формате YYYY-MM-DD", required = true)
+            @PathVariable String date) {
+        List<ApplicationResponse> responses = applicationService.getApplicationsByDate(date);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Получение заявок по диапазону дат",
+            description = "Возвращает список заявок в указанном диапазоне дат",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список заявок по диапазону дат"),
+                    @ApiResponse(responseCode = "400", description = "Некорректный диапазон дат")
+            }
+    )
+    @GetMapping("/date-range")
+    public ResponseEntity<List<ApplicationResponse>> getApplicationsByDateRange(
+            @Parameter(description = "Начальная дата в формате YYYY-MM-DD", required = true)
+            @RequestParam String startDate,
+            @Parameter(description = "Конечная дата в формате YYYY-MM-DD", required = true)
+            @RequestParam String endDate) {
+        List<ApplicationResponse> responses = applicationService.getApplicationsByDateRange(startDate, endDate);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Получение заявок по станции отправления",
+            description = "Возвращает список заявок с указанной станцией отправления",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список заявок по станции отправления"),
+                    @ApiResponse(responseCode = "400", description = "Некорректное название станции")
+            }
+    )
+    @GetMapping("/departure/{station}")
+    public ResponseEntity<List<ApplicationResponse>> getApplicationsByDepartureStation(
+            @Parameter(description = "Название станции отправления", required = true)
+            @PathVariable String station) {
+        List<ApplicationResponse> responses = applicationService.getApplicationsByDepartureStation(station);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Получение заявок по станции назначения",
+            description = "Возвращает список заявок с указанной станцией назначения",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список заявок по станции назначения"),
+                    @ApiResponse(responseCode = "400", description = "Некорректное название станции")
+            }
+    )
+    @GetMapping("/destination/{station}")
+    public ResponseEntity<List<ApplicationResponse>> getApplicationsByDestinationStation(
+            @Parameter(description = "Название станции назначения", required = true)
+            @PathVariable String station) {
+        List<ApplicationResponse> responses = applicationService.getApplicationsByDestinationStation(station);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Получение заявок по любой станции",
+            description = "Возвращает список заявок, где указанная станция является либо отправления, либо назначения",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список заявок по станции"),
+                    @ApiResponse(responseCode = "400", description = "Некорректное название станции")
+            }
+    )
+    @GetMapping("/station/{station}")
+    public ResponseEntity<List<ApplicationResponse>> getApplicationsByAnyStation(
+            @Parameter(description = "Название станции", required = true)
+            @PathVariable String station) {
+        List<ApplicationResponse> responses = applicationService.getApplicationsByAnyStation(station);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Получение заявок по маршруту",
+            description = "Возвращает список заявок с указанным маршрутом (станция отправления и назначения)",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список заявок по маршруту"),
+                    @ApiResponse(responseCode = "400", description = "Некорректные параметры маршрута")
+            }
+    )
+    @GetMapping("/route")
+    public ResponseEntity<List<ApplicationResponse>> getApplicationsByRoute(
+            @Parameter(description = "Станция отправления", required = true)
+            @RequestParam String departureStation,
+            @Parameter(description = "Станция назначения", required = true)
+            @RequestParam String destinationStation) {
+        List<ApplicationResponse> responses = applicationService.getApplicationsByRoute(departureStation, destinationStation);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Получение активных заявок",
+            description = "Возвращает список активных заявок (NEW, ACCEPTED, INPROGRESS)",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список активных заявок")
+            }
+    )
+    @GetMapping("/active")
+    public ResponseEntity<List<ApplicationResponse>> getActiveApplications() {
+        List<ApplicationResponse> responses = applicationService.getActiveApplications();
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Получение активных заявок сопровождающего",
+            description = "Возвращает список активных заявок конкретного сопровождающего",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список активных заявок сопровождающего"),
+                    @ApiResponse(responseCode = "404", description = "Сопровождающий не найден")
+            }
+    )
+    @GetMapping("/active/companion/{companionId}")
+    public ResponseEntity<List<ApplicationResponse>> getActiveApplicationsByCompanion(
+            @Parameter(description = "ID сопровождающего", required = true)
+            @PathVariable Long companionId) {
+        List<ApplicationResponse> responses = applicationService.getActiveApplicationsByCompanion(companionId);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Получение заявок без сопровождающего по станции отправления",
+            description = "Возвращает список заявок без назначенного сопровождающего с указанной станцией отправления",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список заявок без сопровождающего"),
+                    @ApiResponse(responseCode = "400", description = "Некорректное название станции")
+            }
+    )
+    @GetMapping("/no-companion/departure/{station}")
+    public ResponseEntity<List<ApplicationResponse>> getApplicationsWithoutCompanionByDepartureStation(
+            @Parameter(description = "Название станции отправления", required = true)
+            @PathVariable String station) {
+        List<ApplicationResponse> responses = applicationService.getApplicationsWithoutCompanionByDepartureStation(station);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Получение заявок без сопровождающего по станции назначения",
+            description = "Возвращает список заявок без назначенного сопровождающего с указанной станцией назначения",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список заявок без сопровождающего"),
+                    @ApiResponse(responseCode = "400", description = "Некорректное название станции")
+            }
+    )
+    @GetMapping("/no-companion/destination/{station}")
+    public ResponseEntity<List<ApplicationResponse>> getApplicationsWithoutCompanionByDestinationStation(
+            @Parameter(description = "Название станции назначения", required = true)
+            @PathVariable String station) {
+        List<ApplicationResponse> responses = applicationService.getApplicationsWithoutCompanionByDestinationStation(station);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Получение заявок без сопровождающего по любой станции",
+            description = "Возвращает список заявок без назначенного сопровождающего, где указанная станция является либо отправления, либо назначения",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список заявок без сопровождающего"),
+                    @ApiResponse(responseCode = "400", description = "Некорректное название станции")
+            }
+    )
+    @GetMapping("/no-companion/station/{station}")
+    public ResponseEntity<List<ApplicationResponse>> getApplicationsWithoutCompanionByAnyStation(
+            @Parameter(description = "Название станции", required = true)
+            @PathVariable String station) {
+        List<ApplicationResponse> responses = applicationService.getApplicationsWithoutCompanionByAnyStation(station);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Получение заявок без сопровождающего по маршруту",
+            description = "Возвращает список заявок без назначенного сопровождающего с указанным маршрутом",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список заявок без сопровождающего"),
+                    @ApiResponse(responseCode = "400", description = "Некорректные параметры маршрута")
+            }
+    )
+    @GetMapping("/no-companion/route")
+    public ResponseEntity<List<ApplicationResponse>> getApplicationsWithoutCompanionByRoute(
+            @Parameter(description = "Станция отправления", required = true)
+            @RequestParam String departureStation,
+            @Parameter(description = "Станция назначения", required = true)
+            @RequestParam String destinationStation) {
+        List<ApplicationResponse> responses = applicationService.getApplicationsWithoutCompanionByRoute(departureStation, destinationStation);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Получение заявок по статусу и дате",
+            description = "Возвращает список заявок с указанным статусом на конкретную дату",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список заявок по статусу и дате"),
+                    @ApiResponse(responseCode = "400", description = "Некорректные параметры")
+            }
+    )
+    @GetMapping("/status/{status}/date/{date}")
+    public ResponseEntity<List<ApplicationResponse>> getApplicationsByStatusAndDate(
+            @Parameter(description = "Статус заявки", required = true)
+            @PathVariable StatusEnum status,
+            @Parameter(description = "Дата в формате YYYY-MM-DD", required = true)
+            @PathVariable String date) {
+        List<ApplicationResponse> responses = applicationService.getApplicationsByStatusAndDate(status, date);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Получение заявок по статусу и маршруту",
+            description = "Возвращает список заявок с указанным статусом и маршрутом",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список заявок по статусу и маршруту"),
+                    @ApiResponse(responseCode = "400", description = "Некорректные параметры")
+            }
+    )
+    @GetMapping("/status/{status}/route")
+    public ResponseEntity<List<ApplicationResponse>> getApplicationsByStatusAndRoute(
+            @Parameter(description = "Статус заявки", required = true)
+            @PathVariable StatusEnum status,
+            @Parameter(description = "Станция отправления", required = true)
+            @RequestParam String departureStation,
+            @Parameter(description = "Станция назначения", required = true)
+            @RequestParam String destinationStation) {
+        List<ApplicationResponse> responses = applicationService.getApplicationsByStatusAndRoute(status, departureStation, destinationStation);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 }

@@ -4,6 +4,7 @@ import com.example.supportorganizationsapp.config.JwtConstants;
 import com.example.supportorganizationsapp.config.TokenProvider;
 import com.example.supportorganizationsapp.dto.request.UpdateUserRequestDTO;
 import com.example.supportorganizationsapp.dto.response.application.ApplicationResponse;
+import com.example.supportorganizationsapp.enums.RoleEnum;
 import com.example.supportorganizationsapp.exception.UserException;
 import com.example.supportorganizationsapp.models.User;
 import com.example.supportorganizationsapp.repository.UserRepository;
@@ -83,5 +84,44 @@ public class UserServiceImpl implements UserService {
                         application.getCompanion() != null ? application.getCompanion().getId() : null
                 ))
                 .toList();
+    }
+    @Override
+    public User findUserByEmail(String email) throws UserException {
+        Optional<User> user = userRepository.findByEmail(email);
+        if (user.isPresent()) {
+            return user.get();
+        }
+        throw new UserException("User not found with email " + email);
+    }
+    @Override
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    public List<User> getUsersByRole(RoleEnum role) {
+        return userRepository.findByRoleEnum(role);
+    }
+
+    @Override
+    public void deleteUser(Long id) throws UserException {
+        if (!userRepository.existsById(id)) {
+            throw new UserException("User not found with id " + id);
+        }
+        userRepository.deleteById(id);
+    }
+
+    @Override
+    public User findUserByPhoneNumber(String phoneNumber) throws UserException {
+        Optional<User> user = userRepository.findByPhoneNumber(phoneNumber);
+        if (user.isPresent()) {
+            return user.get();
+        }
+        throw new UserException("User not found with phone number " + phoneNumber);
+    }
+
+    @Override
+    public List<User> findUsersByFullName(String firstName, String lastName) {
+        return userRepository.findByFirstNameAndLastName(firstName, lastName);
     }
 }

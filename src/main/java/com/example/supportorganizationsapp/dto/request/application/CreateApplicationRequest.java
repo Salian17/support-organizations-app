@@ -1,7 +1,5 @@
 package com.example.supportorganizationsapp.dto.request.application;
 
-import com.example.supportorganizationsapp.enums.StatusEnum;
-
 public class CreateApplicationRequest {
 
     public String date;

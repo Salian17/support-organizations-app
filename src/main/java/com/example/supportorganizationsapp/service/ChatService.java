@@ -7,6 +7,7 @@ import com.example.supportorganizationsapp.models.Chat;
 import com.example.supportorganizationsapp.models.User;
 
 import java.util.List;
+import java.util.Set;
 
 public interface ChatService {
     Chat createChat(User reqUser, Long userId2) throws UserException;
@@ -18,4 +19,9 @@ public interface ChatService {
     Chat removeFromGroup(Long chatId, Long userId, User reqUser) throws UserException, ChatException;
     void deleteChat(Long chatId, Long userId) throws UserException, ChatException;
     Chat markAsRead(Long chatId, User reqUser) throws ChatException, UserException;
+    Chat promoteToAdmin(Long chatId, Long userId, User reqUser) throws UserException, ChatException;
+    Chat transferOwnership(Long chatId, Long newOwnerId, User reqUser) throws UserException, ChatException;
+    Set<User> getChatAdmins(Long chatId, User reqUser) throws ChatException, UserException;
+    List<Chat> searchChatsByName(String name, User reqUser) throws UserException;
+    List<Chat> findChatsWithUser(Long targetUserId, User reqUser) throws UserException;
 }

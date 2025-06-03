@@ -168,8 +168,8 @@ public class AuthController {
             @Parameter(description = "Данные для входа", required = true)
             @RequestBody LoginRequestDTO loginRequestDTO) {
 
-        final String email = loginRequestDTO.email();
-        final String password = loginRequestDTO.password();
+        final String email = loginRequestDTO.getEmail();
+        final String password = loginRequestDTO.getPassword();
 
         Authentication authentication = authenticateReq(email, password);
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -206,7 +206,7 @@ public class AuthController {
     public ResponseEntity<LoginResponseDTO> refreshToken(
             @Parameter(description = "Refresh токен", required = true)
             @RequestBody RefreshTokenRequestDTO request) {
-        String refreshToken = request.refreshToken();
+        String refreshToken = request.getRefreshToken();
         try {
             Claims claims = tokenProvider.validateToken(refreshToken);
             String email = claims.get(JwtConstants.EMAIL, String.class);

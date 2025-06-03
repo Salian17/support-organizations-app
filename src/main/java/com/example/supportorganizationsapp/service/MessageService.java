@@ -14,4 +14,9 @@ public interface MessageService {
     List<Message> getChatMessages(Long chatId, User reqUser) throws UserException, ChatException;
     Message findMessageById(Long messageId) throws MessageException;
     void deleteMessageById(Long messageId, User reqUser) throws UserException, MessageException;
+    Message updateMessageContent(Long messageId, String newContent, Long userId) throws UserException, MessageException;
+    Message markMessageAsRead(Long messageId, Long userId) throws UserException, MessageException;
+    List<Message> searchMessagesByContent(String searchText, Long chatId, Long userId) throws UserException, ChatException;
+    Message getLastMessageFromUser(Long userId, Long chatId, Long reqUserId) throws UserException, ChatException, MessageException;
 }
+

@@ -6,6 +6,7 @@ import com.example.supportorganizationsapp.dto.request.application.CreateApplica
 import com.example.supportorganizationsapp.dto.response.ApiResponseDTO;
 import com.example.supportorganizationsapp.dto.response.UserDTO;
 import com.example.supportorganizationsapp.dto.response.application.ApplicationResponse;
+import com.example.supportorganizationsapp.enums.RoleEnum;
 import com.example.supportorganizationsapp.exception.UserException;
 import com.example.supportorganizationsapp.models.User;
 import com.example.supportorganizationsapp.service.ApplicationService;
@@ -133,9 +134,122 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @Operation(
+            summary = "Поиск пользователей по имени",
+            description = "Возвращает список пользователей, чьё имя содержит указанную строку.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список найденных пользователей"),
+                    @ApiResponse(responseCode = "400", description = "Некорректный параметр поиска")
+            }
+    )
     @GetMapping("/search")
     public ResponseEntity<Set<UserDTO>> searchUsersByName(@RequestParam("name") String name) {
         List<User> users = userService.searchUserByName(name);
         return new ResponseEntity<>(UserDTO.fromUsers(users), HttpStatus.OK);
+    }
+    @Operation(
+            summary = "Найти пользователя по email",
+            description = "Возвращает пользователя по email адресу.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Пользователь найден"),
+                    @ApiResponse(responseCode = "404", description = "Пользователь не найден")
+            }
+    )
+    @GetMapping("/by-email")
+    public ResponseEntity<UserDTO> getUserByEmail(
+            @Parameter(description = "Email адрес", required = true)
+            @RequestParam("email") String email) throws UserException {
+        User user = userService.findUserByEmail(email);
+        return new ResponseEntity<>(UserDTO.fromUser(user), HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Получить всех пользователей",
+            description = "Возвращает список всех пользователей в системе.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список пользователей"),
+                    @ApiResponse(responseCode = "401", description = "Пользователь не авторизован")
+            }
+    )
+    @GetMapping
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+        return new ResponseEntity<>(UserDTO.fromUsersAsList(users), HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Получить пользователей по роли",
+            description = "Возвращает список пользователей с указанной ролью.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список пользователей"),
+                    @ApiResponse(responseCode = "400", description = "Некорректная роль")
+            }
+    )
+    @GetMapping("/by-role")
+    public ResponseEntity<List<UserDTO>> getUsersByRole(
+            @Parameter(description = "Роль пользователя (PASSENGER или COMPANION)", required = true)
+            @RequestParam("role") String role) {
+        try {
+            RoleEnum roleEnum = RoleEnum.valueOf(role.toUpperCase());
+            List<User> users = userService.getUsersByRole(roleEnum);
+            return new ResponseEntity<>(UserDTO.fromUsersAsList(users), HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Operation(
+            summary = "Удалить пользователя",
+            description = "Удаляет пользователя по его ID.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Пользователь удален"),
+                    @ApiResponse(responseCode = "404", description = "Пользователь не найден")
+            }
+    )
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponseDTO> deleteUser(
+            @Parameter(description = "ID пользователя", required = true)
+            @PathVariable Long id) throws UserException {
+        userService.deleteUser(id);
+        log.info("User deleted with id: {}", id);
+        ApiResponseDTO response = ApiResponseDTO.builder()
+                .message("User deleted successfully")
+                .status(true)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Найти пользователя по номеру телефона",
+            description = "Возвращает пользователя по номеру телефона.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Пользователь найден"),
+                    @ApiResponse(responseCode = "404", description = "Пользователь не найден")
+            }
+    )
+    @GetMapping("/by-phone")
+    public ResponseEntity<UserDTO> getUserByPhoneNumber(
+            @Parameter(description = "Номер телефона", required = true)
+            @RequestParam("phone") String phoneNumber) throws UserException {
+        User user = userService.findUserByPhoneNumber(phoneNumber);
+        return new ResponseEntity<>(UserDTO.fromUser(user), HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Найти пользователей по полному имени",
+            description = "Возвращает список пользователей с указанными именем и фамилией.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Список пользователей"),
+                    @ApiResponse(responseCode = "400", description = "Некорректные параметры")
+            }
+    )
+    @GetMapping("/by-full-name")
+    public ResponseEntity<List<UserDTO>> getUsersByFullName(
+            @Parameter(description = "Имя", required = true)
+            @RequestParam("firstName") String firstName,
+            @Parameter(description = "Фамилия", required = true)
+            @RequestParam("lastName") String lastName) {
+        List<User> users = userService.findUsersByFullName(firstName, lastName);
+        return new ResponseEntity<>(UserDTO.fromUsersAsList(users), HttpStatus.OK);
     }
 }

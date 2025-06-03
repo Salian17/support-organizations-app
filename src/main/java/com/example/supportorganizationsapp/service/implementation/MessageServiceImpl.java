@@ -32,12 +32,12 @@ public class MessageServiceImpl implements MessageService {
     public Message sendMessage(SendMessageRequestDTO req, Long userId) throws UserException, ChatException {
 
         User user = userService.findUserById(userId);
-        Chat chat = chatService.findChatById(req.chatId());
+        Chat chat = chatService.findChatById(req.getChatId());
 
         Message message = Message.builder()
                 .chat(chat)
                 .user(user)
-                .content(req.content())
+                .content(req.getContent())
                 .timeStamp(LocalDateTime.now())
                 .readBy(new HashSet<>(Set.of(user.getId())))
                 .build();
@@ -83,5 +83,60 @@ public class MessageServiceImpl implements MessageService {
 
         throw new UserException("User is not related to message " + message.getId());
     }
+    @Override
+    public Message updateMessageContent(Long messageId, String newContent, Long userId) throws UserException, MessageException {
+        User user = userService.findUserById(userId);
+        Message message = findMessageById(messageId);
 
+        if (!message.getUser().getId().equals(user.getId())) {
+            throw new UserException("User is not authorized to update this message");
+        }
+
+        message.setContent(newContent);
+        return messageRepository.save(message);
+    }
+
+    @Override
+    public Message markMessageAsRead(Long messageId, Long userId) throws UserException, MessageException {
+        User user = userService.findUserById(userId);
+        Message message = findMessageById(messageId);
+
+        // Проверяем, что пользователь состоит в чате
+        if (!message.getChat().getUsers().contains(user)) {
+            throw new UserException("User is not a member of this chat");
+        }
+
+        message.getReadBy().add(user.getId());
+        return messageRepository.save(message);
+    }
+
+    @Override
+    public List<Message> searchMessagesByContent(String searchText, Long chatId, Long userId) throws UserException, ChatException {
+        User user = userService.findUserById(userId);
+        Chat chat = chatService.findChatById(chatId);
+
+        if (!chat.getUsers().contains(user)) {
+            throw new UserException("User is not a member of this chat");
+        }
+
+        return messageRepository.findByChat_IdAndContentContainingIgnoreCase(chatId, searchText);
+    }
+
+    @Override
+    public Message getLastMessageFromUser(Long userId, Long chatId, Long reqUserId) throws UserException, ChatException, MessageException {
+        User reqUser = userService.findUserById(reqUserId);
+        Chat chat = chatService.findChatById(chatId);
+
+        if (!chat.getUsers().contains(reqUser)) {
+            throw new UserException("User is not a member of this chat");
+        }
+
+        List<Message> messages = messageRepository.findByChat_IdAndUser_IdOrderByTimeStampDesc(chatId, userId);
+
+        if (messages.isEmpty()) {
+            throw new MessageException("No messages found from user " + userId + " in chat " + chatId);
+        }
+
+        return messages.get(0);
+    }
 }

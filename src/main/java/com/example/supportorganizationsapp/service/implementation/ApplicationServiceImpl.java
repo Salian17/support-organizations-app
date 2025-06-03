@@ -30,6 +30,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         this.authUtil = authUtil;
     }
 
+    // Существующие методы (без изменений)
     @Override
     public ApplicationResponse createApplication(CreateApplicationRequest applicationRequest) {
         String passengerEmail = authUtil.getPrincipalEmail();
@@ -42,7 +43,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 applicationRequest.getDepartureStation(),
                 applicationRequest.getDestinationStation(),
                 applicationRequest.getComment(),
-                StatusEnum.NEW, // Устанавливаем статус NEW при создании
+                StatusEnum.NEW,
                 passenger,
                 null
         );
@@ -148,20 +149,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationRepository.deleteById(id);
     }
 
-    private ApplicationResponse mapToResponse(Application application) {
-        return new ApplicationResponse(
-                application.getId(),
-                application.getDate(),
-                application.getTime(),
-                application.getDepartureStation(),
-                application.getDestinationStation(),
-                application.getComment(),
-                application.getStatus(),
-                application.getPassenger().getId(),
-                application.getCompanion() != null ? application.getCompanion().getId() : null
-        );
-    }
-
     @Override
     public ApplicationResponse addCompanion(Long id) {
         String companionEmail = authUtil.getPrincipalEmail();
@@ -198,5 +185,191 @@ public class ApplicationServiceImpl implements ApplicationService {
         return applicationRepository.findByCompanion(companion.getId()).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+    }
+
+    // НОВЫЕ МЕТОДЫ
+
+    @Override
+    public List<ApplicationResponse> getApplicationsByStatus(StatusEnum status) {
+        if (status == null) {
+            throw new IllegalArgumentException("Status cannot be null");
+        }
+        return applicationRepository.findByStatus(status).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ApplicationResponse> getApplicationsByDate(String date) {
+        if (date == null || date.trim().isEmpty()) {
+            throw new IllegalArgumentException("Date cannot be null or empty");
+        }
+        return applicationRepository.findByDate(date.trim()).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ApplicationResponse> getApplicationsByDateRange(String startDate, String endDate) {
+        if (startDate == null || startDate.trim().isEmpty()) {
+            throw new IllegalArgumentException("Start date cannot be null or empty");
+        }
+        if (endDate == null || endDate.trim().isEmpty()) {
+            throw new IllegalArgumentException("End date cannot be null or empty");
+        }
+        return applicationRepository.findByDateRange(startDate.trim(), endDate.trim()).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ApplicationResponse> getApplicationsByDepartureStation(String station) {
+        if (station == null || station.trim().isEmpty()) {
+            throw new IllegalArgumentException("Station cannot be null or empty");
+        }
+        return applicationRepository.findByDepartureStation(station.trim()).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ApplicationResponse> getApplicationsByDestinationStation(String station) {
+        if (station == null || station.trim().isEmpty()) {
+            throw new IllegalArgumentException("Station cannot be null or empty");
+        }
+        return applicationRepository.findByDestinationStation(station.trim()).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ApplicationResponse> getApplicationsByAnyStation(String station) {
+        if (station == null || station.trim().isEmpty()) {
+            throw new IllegalArgumentException("Station cannot be null or empty");
+        }
+        return applicationRepository.findByAnyStation(station.trim()).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ApplicationResponse> getApplicationsByRoute(String departureStation, String destinationStation) {
+        if (departureStation == null || departureStation.trim().isEmpty()) {
+            throw new IllegalArgumentException("Departure station cannot be null or empty");
+        }
+        if (destinationStation == null || destinationStation.trim().isEmpty()) {
+            throw new IllegalArgumentException("Destination station cannot be null or empty");
+        }
+        return applicationRepository.findByRoute(departureStation.trim(), destinationStation.trim()).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ApplicationResponse> getActiveApplications() {
+        return applicationRepository.findActiveApplications().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ApplicationResponse> getActiveApplicationsByCompanion(Long companionId) {
+        if (companionId == null) {
+            throw new IllegalArgumentException("Companion ID cannot be null");
+        }
+
+        // Проверяем существование сопровождающего
+        userRepository.findById(companionId)
+                .orElseThrow(() -> new IllegalArgumentException("Companion not found"));
+
+        return applicationRepository.findActiveApplicationsByCompanion(companionId).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ApplicationResponse> getApplicationsWithoutCompanionByDepartureStation(String station) {
+        if (station == null || station.trim().isEmpty()) {
+            throw new IllegalArgumentException("Station cannot be null or empty");
+        }
+        return applicationRepository.findWithoutCompanionByDepartureStation(station.trim()).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ApplicationResponse> getApplicationsWithoutCompanionByDestinationStation(String station) {
+        if (station == null || station.trim().isEmpty()) {
+            throw new IllegalArgumentException("Station cannot be null or empty");
+        }
+        return applicationRepository.findWithoutCompanionByDestinationStation(station.trim()).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ApplicationResponse> getApplicationsWithoutCompanionByAnyStation(String station) {
+        if (station == null || station.trim().isEmpty()) {
+            throw new IllegalArgumentException("Station cannot be null or empty");
+        }
+        return applicationRepository.findWithoutCompanionByAnyStation(station.trim()).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ApplicationResponse> getApplicationsWithoutCompanionByRoute(String departureStation, String destinationStation) {
+        if (departureStation == null || departureStation.trim().isEmpty()) {
+            throw new IllegalArgumentException("Departure station cannot be null or empty");
+        }
+        if (destinationStation == null || destinationStation.trim().isEmpty()) {
+            throw new IllegalArgumentException("Destination station cannot be null or empty");
+        }
+        return applicationRepository.findWithoutCompanionByRoute(departureStation.trim(), destinationStation.trim()).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ApplicationResponse> getApplicationsByStatusAndDate(StatusEnum status, String date) {
+        if (status == null) {
+            throw new IllegalArgumentException("Status cannot be null");
+        }
+        if (date == null || date.trim().isEmpty()) {
+            throw new IllegalArgumentException("Date cannot be null or empty");
+        }
+        return applicationRepository.findByStatusAndDate(status, date.trim()).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ApplicationResponse> getApplicationsByStatusAndRoute(StatusEnum status, String departureStation, String destinationStation) {
+        if (status == null) {
+            throw new IllegalArgumentException("Status cannot be null");
+        }
+        if (departureStation == null || departureStation.trim().isEmpty()) {
+            throw new IllegalArgumentException("Departure station cannot be null or empty");
+        }
+        if (destinationStation == null || destinationStation.trim().isEmpty()) {
+            throw new IllegalArgumentException("Destination station cannot be null or empty");
+        }
+        return applicationRepository.findByStatusAndRoute(status, departureStation.trim(), destinationStation.trim()).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    private ApplicationResponse mapToResponse(Application application) {
+        return new ApplicationResponse(
+                application.getId(),
+                application.getDate(),
+                application.getTime(),
+                application.getDepartureStation(),
+                application.getDestinationStation(),
+                application.getComment(),
+                application.getStatus(),
+                application.getPassenger().getId(),
+                application.getCompanion() != null ? application.getCompanion().getId() : null
+        );
     }
 }

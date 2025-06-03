@@ -82,13 +82,13 @@ public class ChatServiceImpl implements ChatService {
 
         Chat groupChat = Chat.builder()
                 .isGroup(true)
-                .chatName(req.chatName())
+                .chatName(req.getChatName())
                 .createdBy(reqUser)
                 .admins(new HashSet<>(Set.of(reqUser)))
                 .users(new HashSet<>())
                 .build();
 
-        for (Long userId : req.userIds()) {
+        for (Long userId : req.getUserIds()) {
             User userToAdd = userService.findUserById(userId);
             groupChat.getUsers().add(userToAdd);
         }
@@ -169,6 +169,101 @@ public class ChatServiceImpl implements ChatService {
 
 
         throw new UserException("User is not related to chat");
+    }
+
+    @Override
+    public Chat promoteToAdmin(Long chatId, Long userId, User reqUser) throws UserException, ChatException {
+
+        Chat chat = findChatById(chatId);
+        User userToPromote = userService.findUserById(userId);
+
+        if (!chat.getIsGroup()) {
+            throw new ChatException("Cannot promote admin in private chat");
+        }
+
+        if (!chat.getCreatedBy().getId().equals(reqUser.getId())) {
+            throw new UserException("Only chat creator can promote users to admin");
+        }
+
+        if (!chat.getUsers().contains(userToPromote)) {
+            throw new UserException("User is not a member of this chat");
+        }
+
+        if (chat.getAdmins().contains(userToPromote)) {
+            throw new UserException("User is already an admin");
+        }
+
+        chat.getAdmins().add(userToPromote);
+        return chatRepository.save(chat);
+    }
+
+    @Override
+    public Chat transferOwnership(Long chatId, Long newOwnerId, User reqUser) throws UserException, ChatException {
+
+        Chat chat = findChatById(chatId);
+        User newOwner = userService.findUserById(newOwnerId);
+
+        if (!chat.getIsGroup()) {
+            throw new ChatException("Cannot transfer ownership of private chat");
+        }
+
+        if (!chat.getCreatedBy().getId().equals(reqUser.getId())) {
+            throw new UserException("Only chat creator can transfer ownership");
+        }
+
+        if (!chat.getUsers().contains(newOwner)) {
+            throw new UserException("New owner must be a member of the chat");
+        }
+
+        if (newOwner.getId().equals(reqUser.getId())) {
+            throw new UserException("Cannot transfer ownership to yourself");
+        }
+
+        chat.setCreatedBy(newOwner);
+
+        if (!chat.getAdmins().contains(newOwner)) {
+            chat.getAdmins().add(newOwner);
+        }
+
+        return chatRepository.save(chat);
+    }
+
+    @Override
+    public Set<User> getChatAdmins(Long chatId, User reqUser) throws ChatException, UserException {
+
+        Chat chat = findChatById(chatId);
+
+        if (!chat.getUsers().contains(reqUser) && !chat.getAdmins().contains(reqUser)) {
+            throw new UserException("User is not a member of this chat");
+        }
+
+        if (!chat.getIsGroup()) {
+            throw new ChatException("Private chats don't have admins");
+        }
+
+        return chat.getAdmins();
+    }
+
+    @Override
+    public List<Chat> searchChatsByName(String name, User reqUser) throws UserException {
+
+        if (name == null || name.trim().isEmpty()) {
+            throw new UserException("Search name cannot be empty");
+        }
+
+        return chatRepository.findChatsByNameContainingAndUser(name.trim(), reqUser);
+    }
+
+    @Override
+    public List<Chat> findChatsWithUser(Long targetUserId, User reqUser) throws UserException {
+
+        User targetUser = userService.findUserById(targetUserId);
+
+        if (targetUser.getId().equals(reqUser.getId())) {
+            throw new UserException("Cannot search chats with yourself");
+        }
+
+        return chatRepository.findChatsWithUserByRequestingUser(targetUser, reqUser);
     }
 
 }
