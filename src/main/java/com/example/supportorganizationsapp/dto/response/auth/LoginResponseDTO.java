@@ -1,7 +1,5 @@
 package com.example.supportorganizationsapp.dto.response.auth;
 
-import lombok.Builder;
-
 import java.util.Objects;
 
 public class LoginResponseDTO {

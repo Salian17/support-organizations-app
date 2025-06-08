@@ -8,7 +8,6 @@ import com.example.supportorganizationsapp.enums.StatusEnum;
 import java.util.List;
 
 public interface ApplicationService {
-    // Существующие методы
     ApplicationResponse createApplication(CreateApplicationRequest application);
     ApplicationResponse updateApplication(Long id, UpdateApplicationRequest application);
     ApplicationResponse getApplicationById(Long id);

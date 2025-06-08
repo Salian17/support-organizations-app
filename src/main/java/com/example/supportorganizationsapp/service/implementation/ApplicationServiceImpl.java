@@ -30,7 +30,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         this.authUtil = authUtil;
     }
 
-    // Существующие методы (без изменений)
     @Override
     public ApplicationResponse createApplication(CreateApplicationRequest applicationRequest) {
         String passengerEmail = authUtil.getPrincipalEmail();
@@ -187,8 +186,6 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .collect(Collectors.toList());
     }
 
-    // НОВЫЕ МЕТОДЫ
-
     @Override
     public List<ApplicationResponse> getApplicationsByStatus(StatusEnum status) {
         if (status == null) {
@@ -278,7 +275,6 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new IllegalArgumentException("Companion ID cannot be null");
         }
 
-        // Проверяем существование сопровождающего
         userRepository.findById(companionId)
                 .orElseThrow(() -> new IllegalArgumentException("Companion not found"));
 

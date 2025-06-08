@@ -1,7 +1,6 @@
 package com.example.supportorganizationsapp.dto.response;
 
 import com.example.supportorganizationsapp.models.User;
-import lombok.Builder;
 
 import java.util.Collection;
 import java.util.List;

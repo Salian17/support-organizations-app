@@ -9,13 +9,15 @@ import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -43,6 +45,29 @@ public class ApplicationController {
     @Operation(
             summary = "Создание новой заявки",
             description = "Создаёт новую заявку со статусом NEW",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Данные для создания заявки",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = CreateApplicationRequest.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "Заявка на поездку",
+                                            summary = "Стандартная заявка на сопровождение",
+                                            value = """
+                                                    {
+                                                      "date": "2025-07-15",
+                                                      "time": "09:30",
+                                                      "departureStation": "Новослабодская",
+                                                      "destinationStation": "Менделеевкая",
+                                                      "comment": "Комментарий"
+                                                    }
+                                                    """
+                                    ),
+                            }
+                    )
+            ),
             responses = {
                     @ApiResponse(responseCode = "201", description = "Заявка успешно создана"),
                     @ApiResponse(responseCode = "400", description = "Некорректные данные")
@@ -50,7 +75,6 @@ public class ApplicationController {
     )
     @PostMapping
     public ResponseEntity<ApplicationResponse> createApplication(
-            @Parameter(description = "Данные для создания заявки", required = true)
             @RequestBody CreateApplicationRequest applicationRequest) {
         ApplicationResponse response = applicationService.createApplication(applicationRequest);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -59,6 +83,32 @@ public class ApplicationController {
     @Operation(
             summary = "Обновление заявки",
             description = "Обновляет существующую заявку по её ID",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Данные для обновления заявки",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UpdateApplicationRequest.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "Обновление времени и комментария",
+                                            summary = "Изменение времени отправления и добавление комментария",
+                                            value = """
+                                                    {
+                                                      "date": "2025-07-15",
+                                                      "time": "10:00",
+                                                      "departureStation": "Москва Ленинградская",
+                                                      "destinationStation": "Санкт-Петербург Московский",
+                                                      "comment": "Изменено время отправления, требуется помощь с инвалидной коляской",
+                                                      "status": "NEW",
+                                                      "passengerId": 1,
+                                                      "companionId": null
+                                                    }
+                                                    """
+                                    ),
+                            }
+                    )
+            ),
             responses = {
                     @ApiResponse(responseCode = "200", description = "Заявка успешно обновлена"),
                     @ApiResponse(responseCode = "404", description = "Заявка не найдена")
@@ -66,9 +116,8 @@ public class ApplicationController {
     )
     @PutMapping("/{id}")
     public ResponseEntity<ApplicationResponse> updateApplication(
-            @Parameter(description = "ID заявки", required = true)
+            @Parameter(description = "ID заявки", required = true, example = "3")
             @PathVariable Long id,
-            @Parameter(description = "Данные для обновления заявки", required = true)
             @RequestBody UpdateApplicationRequest applicationRequest) {
         ApplicationResponse response = applicationService.updateApplication(id, applicationRequest);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -84,7 +133,7 @@ public class ApplicationController {
     )
     @GetMapping("/{id}")
     public ResponseEntity<ApplicationResponse> getApplicationById(
-            @Parameter(description = "ID заявки", required = true)
+            @Parameter(description = "ID заявки", required = true, example = "3")
             @PathVariable Long id) {
         ApplicationResponse response = applicationService.getApplicationById(id);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -113,7 +162,7 @@ public class ApplicationController {
     )
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteApplication(
-            @Parameter(description = "ID заявки", required = true)
+            @Parameter(description = "ID заявки", required = true, example = "3")
             @PathVariable Long id) {
         applicationService.deleteApplication(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -129,7 +178,7 @@ public class ApplicationController {
     )
     @PostMapping("/{id}/cancel")
     public ResponseEntity<ApplicationResponse> cancelApplication(
-            @Parameter(description = "ID заявки", required = true)
+            @Parameter(description = "ID заявки", required = true, example = "3")
             @PathVariable Long id) {
         ApplicationResponse response = applicationService.cancelApplication(id);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -145,9 +194,9 @@ public class ApplicationController {
     )
     @PostMapping("/{id}/accept")
     public ResponseEntity<ApplicationResponse> acceptApplication(
-            @Parameter(description = "ID заявки", required = true)
+            @Parameter(description = "ID заявки", required = true, example = "3")
             @PathVariable Long id,
-            @Parameter(description = "ID сопровождающего", required = true)
+            @Parameter(description = "ID сопровождающего", required = true, example = "3")
             @RequestParam Long companionId) {
         ApplicationResponse response = applicationService.acceptApplication(id, companionId);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -163,7 +212,7 @@ public class ApplicationController {
     )
     @PostMapping("/{id}/reject")
     public ResponseEntity<ApplicationResponse> rejectApplication(
-            @Parameter(description = "ID заявки", required = true)
+            @Parameter(description = "ID заявки", required = true, example = "3")
             @PathVariable Long id) {
         ApplicationResponse response = applicationService.rejectApplication(id);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -179,7 +228,7 @@ public class ApplicationController {
     )
     @PostMapping("/{id}/start")
     public ResponseEntity<ApplicationResponse> startProgress(
-            @Parameter(description = "ID заявки", required = true)
+            @Parameter(description = "ID заявки", required = true, example = "3")
             @PathVariable Long id) {
         ApplicationResponse response = applicationService.startProgress(id);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -195,7 +244,7 @@ public class ApplicationController {
     )
     @PostMapping("/{id}/complete")
     public ResponseEntity<ApplicationResponse> completeApplication(
-            @Parameter(description = "ID заявки", required = true)
+            @Parameter(description = "ID заявки", required = true, example = "3")
             @PathVariable Long id) {
         ApplicationResponse response = applicationService.completeApplication(id);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -211,7 +260,7 @@ public class ApplicationController {
     )
     @PutMapping("/{id}/assigned")
     public ResponseEntity<ApplicationResponse> addCompanion(
-            @Parameter(description = "ID заявки", required = true)
+            @Parameter(description = "ID заявки", required = true, example = "3")
             @PathVariable Long id) {
         ApplicationResponse response = applicationService.addCompanion(id);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -242,6 +291,7 @@ public class ApplicationController {
         List<ApplicationResponse> responses = applicationService.getByCompanion();
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
+
     @Operation(
             summary = "Получение заявок по статусу",
             description = "Возвращает список заявок с указанным статусом",
@@ -252,7 +302,9 @@ public class ApplicationController {
     )
     @GetMapping("/status/{status}")
     public ResponseEntity<List<ApplicationResponse>> getApplicationsByStatus(
-            @Parameter(description = "Статус заявки", required = true)
+            @Parameter(description = "Статус заявки", required = true,
+                    example = "NEW",
+                    schema = @Schema(allowableValues = {"NEW", "ACCEPTED", "REJECTED", "CANCELED", "INPROGRESS", "COMPLETED", "OVERDUE"}))
             @PathVariable StatusEnum status) {
         List<ApplicationResponse> responses = applicationService.getApplicationsByStatus(status);
         return new ResponseEntity<>(responses, HttpStatus.OK);
@@ -268,7 +320,7 @@ public class ApplicationController {
     )
     @GetMapping("/date/{date}")
     public ResponseEntity<List<ApplicationResponse>> getApplicationsByDate(
-            @Parameter(description = "Дата в формате YYYY-MM-DD", required = true)
+            @Parameter(description = "Дата в формате YYYY-MM-DD", required = true, example = "2025-07-15")
             @PathVariable String date) {
         List<ApplicationResponse> responses = applicationService.getApplicationsByDate(date);
         return new ResponseEntity<>(responses, HttpStatus.OK);
@@ -284,9 +336,9 @@ public class ApplicationController {
     )
     @GetMapping("/date-range")
     public ResponseEntity<List<ApplicationResponse>> getApplicationsByDateRange(
-            @Parameter(description = "Начальная дата в формате YYYY-MM-DD", required = true)
+            @Parameter(description = "Начальная дата в формате YYYY-MM-DD", required = true, example = "2025-07-01")
             @RequestParam String startDate,
-            @Parameter(description = "Конечная дата в формате YYYY-MM-DD", required = true)
+            @Parameter(description = "Конечная дата в формате YYYY-MM-DD", required = true, example = "2025-07-31")
             @RequestParam String endDate) {
         List<ApplicationResponse> responses = applicationService.getApplicationsByDateRange(startDate, endDate);
         return new ResponseEntity<>(responses, HttpStatus.OK);
@@ -302,7 +354,7 @@ public class ApplicationController {
     )
     @GetMapping("/departure/{station}")
     public ResponseEntity<List<ApplicationResponse>> getApplicationsByDepartureStation(
-            @Parameter(description = "Название станции отправления", required = true)
+            @Parameter(description = "Название станции отправления", required = true, example = "Новослабодская")
             @PathVariable String station) {
         List<ApplicationResponse> responses = applicationService.getApplicationsByDepartureStation(station);
         return new ResponseEntity<>(responses, HttpStatus.OK);
@@ -318,7 +370,7 @@ public class ApplicationController {
     )
     @GetMapping("/destination/{station}")
     public ResponseEntity<List<ApplicationResponse>> getApplicationsByDestinationStation(
-            @Parameter(description = "Название станции назначения", required = true)
+            @Parameter(description = "Название станции назначения", required = true, example = "Менделеевская")
             @PathVariable String station) {
         List<ApplicationResponse> responses = applicationService.getApplicationsByDestinationStation(station);
         return new ResponseEntity<>(responses, HttpStatus.OK);
@@ -334,7 +386,7 @@ public class ApplicationController {
     )
     @GetMapping("/station/{station}")
     public ResponseEntity<List<ApplicationResponse>> getApplicationsByAnyStation(
-            @Parameter(description = "Название станции", required = true)
+            @Parameter(description = "Название станции", required = true, example = "Москва Ленинградская")
             @PathVariable String station) {
         List<ApplicationResponse> responses = applicationService.getApplicationsByAnyStation(station);
         return new ResponseEntity<>(responses, HttpStatus.OK);
@@ -350,9 +402,9 @@ public class ApplicationController {
     )
     @GetMapping("/route")
     public ResponseEntity<List<ApplicationResponse>> getApplicationsByRoute(
-            @Parameter(description = "Станция отправления", required = true)
+            @Parameter(description = "Станция отправления", required = true, example = "Новослабодская")
             @RequestParam String departureStation,
-            @Parameter(description = "Станция назначения", required = true)
+            @Parameter(description = "Станция назначения", required = true, example = "Менделеевская")
             @RequestParam String destinationStation) {
         List<ApplicationResponse> responses = applicationService.getApplicationsByRoute(departureStation, destinationStation);
         return new ResponseEntity<>(responses, HttpStatus.OK);
@@ -381,7 +433,7 @@ public class ApplicationController {
     )
     @GetMapping("/active/companion/{companionId}")
     public ResponseEntity<List<ApplicationResponse>> getActiveApplicationsByCompanion(
-            @Parameter(description = "ID сопровождающего", required = true)
+            @Parameter(description = "ID сопровождающего", required = true, example = "3")
             @PathVariable Long companionId) {
         List<ApplicationResponse> responses = applicationService.getActiveApplicationsByCompanion(companionId);
         return new ResponseEntity<>(responses, HttpStatus.OK);
@@ -397,7 +449,7 @@ public class ApplicationController {
     )
     @GetMapping("/no-companion/departure/{station}")
     public ResponseEntity<List<ApplicationResponse>> getApplicationsWithoutCompanionByDepartureStation(
-            @Parameter(description = "Название станции отправления", required = true)
+            @Parameter(description = "Название станции отправления", required = true, example = "Новослабодская")
             @PathVariable String station) {
         List<ApplicationResponse> responses = applicationService.getApplicationsWithoutCompanionByDepartureStation(station);
         return new ResponseEntity<>(responses, HttpStatus.OK);
@@ -413,7 +465,7 @@ public class ApplicationController {
     )
     @GetMapping("/no-companion/destination/{station}")
     public ResponseEntity<List<ApplicationResponse>> getApplicationsWithoutCompanionByDestinationStation(
-            @Parameter(description = "Название станции назначения", required = true)
+            @Parameter(description = "Название станции назначения", required = true, example = "Менделеевская")
             @PathVariable String station) {
         List<ApplicationResponse> responses = applicationService.getApplicationsWithoutCompanionByDestinationStation(station);
         return new ResponseEntity<>(responses, HttpStatus.OK);
@@ -429,7 +481,7 @@ public class ApplicationController {
     )
     @GetMapping("/no-companion/station/{station}")
     public ResponseEntity<List<ApplicationResponse>> getApplicationsWithoutCompanionByAnyStation(
-            @Parameter(description = "Название станции", required = true)
+            @Parameter(description = "Название станции", required = true, example = "Новослабодская")
             @PathVariable String station) {
         List<ApplicationResponse> responses = applicationService.getApplicationsWithoutCompanionByAnyStation(station);
         return new ResponseEntity<>(responses, HttpStatus.OK);
@@ -445,9 +497,9 @@ public class ApplicationController {
     )
     @GetMapping("/no-companion/route")
     public ResponseEntity<List<ApplicationResponse>> getApplicationsWithoutCompanionByRoute(
-            @Parameter(description = "Станция отправления", required = true)
+            @Parameter(description = "Станция отправления", required = true, example = "Новослабодская")
             @RequestParam String departureStation,
-            @Parameter(description = "Станция назначения", required = true)
+            @Parameter(description = "Станция назначения", required = true, example = "Менделеевская")
             @RequestParam String destinationStation) {
         List<ApplicationResponse> responses = applicationService.getApplicationsWithoutCompanionByRoute(departureStation, destinationStation);
         return new ResponseEntity<>(responses, HttpStatus.OK);
@@ -463,9 +515,11 @@ public class ApplicationController {
     )
     @GetMapping("/status/{status}/date/{date}")
     public ResponseEntity<List<ApplicationResponse>> getApplicationsByStatusAndDate(
-            @Parameter(description = "Статус заявки", required = true)
+            @Parameter(description = "Статус заявки", required = true,
+                    example = "NEW",
+                    schema = @Schema(allowableValues = {"NEW", "ACCEPTED", "REJECTED", "CANCELED", "INPROGRESS", "COMPLETED", "OVERDUE"}))
             @PathVariable StatusEnum status,
-            @Parameter(description = "Дата в формате YYYY-MM-DD", required = true)
+            @Parameter(description = "Дата в формате YYYY-MM-DD", required = true, example = "2025-07-15")
             @PathVariable String date) {
         List<ApplicationResponse> responses = applicationService.getApplicationsByStatusAndDate(status, date);
         return new ResponseEntity<>(responses, HttpStatus.OK);
@@ -481,11 +535,13 @@ public class ApplicationController {
     )
     @GetMapping("/status/{status}/route")
     public ResponseEntity<List<ApplicationResponse>> getApplicationsByStatusAndRoute(
-            @Parameter(description = "Статус заявки", required = true)
+            @Parameter(description = "Статус заявки", required = true,
+                    example = "NEW",
+                    schema = @Schema(allowableValues = {"NEW", "ACCEPTED", "REJECTED", "CANCELED", "INPROGRESS", "COMPLETED", "OVERDUE"}))
             @PathVariable StatusEnum status,
-            @Parameter(description = "Станция отправления", required = true)
+            @Parameter(description = "Станция отправления", required = true, example = "Москва Ленинградская")
             @RequestParam String departureStation,
-            @Parameter(description = "Станция назначения", required = true)
+            @Parameter(description = "Станция назначения", required = true, example = "Санкт-Петербург Московский")
             @RequestParam String destinationStation) {
         List<ApplicationResponse> responses = applicationService.getApplicationsByStatusAndRoute(status, departureStation, destinationStation);
         return new ResponseEntity<>(responses, HttpStatus.OK);

@@ -1,7 +1,6 @@
 package com.example.supportorganizationsapp.dto.response;
 
 import com.example.supportorganizationsapp.models.Message;
-import lombok.Builder;
 
 import java.time.LocalDateTime;
 import java.util.*;

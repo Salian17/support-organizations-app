@@ -101,7 +101,6 @@ public class MessageServiceImpl implements MessageService {
         User user = userService.findUserById(userId);
         Message message = findMessageById(messageId);
 
-        // Проверяем, что пользователь состоит в чате
         if (!message.getChat().getUsers().contains(user)) {
             throw new UserException("User is not a member of this chat");
         }

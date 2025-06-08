@@ -77,12 +77,10 @@ public class AuthController {
 
         User savedUser = userRepository.save(newUser);
 
-        // Загружаем UserDetails для получения ролей
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
         Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // Генерируем оба токена
         String accessToken = tokenProvider.generateToken(authentication, JwtConstants.ACCESS_TOKEN_VALIDITY);
         String refreshToken = tokenProvider.generateToken(authentication, JwtConstants.REFRESH_TOKEN_VALIDITY);
 
@@ -134,12 +132,10 @@ public class AuthController {
 
         User savedUser = userRepository.save(newUser);
 
-        // Загружаем UserDetails для получения ролей
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
         Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // Генерируем оба токена
         String accessToken = tokenProvider.generateToken(authentication, JwtConstants.ACCESS_TOKEN_VALIDITY);
         String refreshToken = tokenProvider.generateToken(authentication, JwtConstants.REFRESH_TOKEN_VALIDITY);
 
@@ -174,11 +170,9 @@ public class AuthController {
         Authentication authentication = authenticateReq(email, password);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // Получаем ID пользователя из базы данных
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BadCredentialsException("User not found"));
 
-        // Генерируем оба токена
         String accessToken = tokenProvider.generateToken(authentication, JwtConstants.ACCESS_TOKEN_VALIDITY);
         String refreshToken = tokenProvider.generateToken(authentication, JwtConstants.REFRESH_TOKEN_VALIDITY);
 

@@ -19,9 +19,6 @@ public class User extends Base {
     private RoleEnum roleEnum;
     private List<Application> applications;
 
-    /**
-     * Конструктор по умолчанию, необходимый для работы JPA.
-     */
     public User() {
     }
 
